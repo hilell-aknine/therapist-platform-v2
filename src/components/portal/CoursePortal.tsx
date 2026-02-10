@@ -3,10 +3,10 @@ import { useParams, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowRight, ChevronDown, ChevronLeft, ChevronRight,
-  Play, Check, BookOpen, FileText, Heart, Menu, X,
+  Play, Check, BookOpen, FileText, Menu, X,
   GraduationCap,
 } from 'lucide-react'
-import { allCourses, getAllLessons, getAdjacentLessons, type Course, type Lesson, type Module } from '../../data/courses'
+import { allCourses, getAllLessons, getAdjacentLessons, type Lesson, type Module } from '../../data/courses'
 
 // ==========================================
 // Progress helpers (localStorage)

@@ -1,3 +1,4 @@
+import { Routes, Route } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Heart, Brain, Shield, Sparkles } from 'lucide-react'
 import Navbar from './components/Navbar'
@@ -10,6 +11,7 @@ import About from './components/About'
 import TrainingProgram from './components/TrainingProgram'
 import SocialInitiative from './components/SocialInitiative'
 import Footer from './components/Footer'
+import CoursePortal from './components/portal/CoursePortal'
 import './App.css'
 
 const floatingIcons = [
@@ -21,7 +23,7 @@ const floatingIcons = [
   { icon: Brain, x: '90%', y: '45%', delay: 3, duration: 7 },
 ]
 
-function App() {
+function HomePage() {
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-bl from-deep-petrol via-muted-teal to-deep-petrol font-['Heebo',sans-serif]">
       <Navbar />
@@ -69,40 +71,33 @@ function App() {
         )
       })}
 
-      {/* ======= Page Sections (matching old site flow) ======= */}
+      {/* Page Sections */}
       <div className="relative z-10">
-        {/* 1. Hero */}
         <div className="flex flex-col items-center px-4 pt-24 pb-12">
           <Hero />
         </div>
-
-        {/* 2. Stats Strip */}
         <StatsStrip />
-
-        {/* 3. Training Highlights (3 cards: הסמכה, ליווי, כלים) */}
         <TrainingHighlights />
-
-        {/* 4. Mission Quote */}
         <MissionQuote />
-
-        {/* 5. Courses Grid */}
         <div className="flex flex-col items-center px-4 py-12">
           <CoursesGrid />
         </div>
-
-        {/* 6. About (Vision & Mission + Values + Approach) */}
         <About />
-
-        {/* 7. Training Program (Features, Testimonials, FAQ, Registration) */}
         <TrainingProgram />
-
-        {/* 8. Social Initiative */}
         <SocialInitiative />
       </div>
 
-      {/* Footer */}
       <Footer />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/course/:slug" element={<CoursePortal />} />
+    </Routes>
   )
 }
 

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import {
   Brain,
   Crown,
@@ -175,12 +176,23 @@ export default function CoursesGrid() {
               </div>
 
               {/* CTA Button */}
-              <button
-                className={`flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${config.btnClass}`}
-              >
-                {config.btnText}
-                {(isOpen || isLocked) && <ArrowLeft size={16} />}
-              </button>
+              {isOpen ? (
+                <Link
+                  to={`/course/${course.slug}`}
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${config.btnClass}`}
+                >
+                  {config.btnText}
+                  <ArrowLeft size={16} />
+                </Link>
+              ) : (
+                <Link
+                  to={isLocked && course.slug === 'nlp-master' ? `/course/${course.slug}` : '#training'}
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${config.btnClass}`}
+                >
+                  {config.btnText}
+                  {isLocked && <ArrowLeft size={16} />}
+                </Link>
+              )}
             </motion.div>
           )
         })}

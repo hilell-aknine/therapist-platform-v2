@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { Heart, Menu, X } from 'lucide-react'
 
 const navLinks = [
@@ -37,14 +38,14 @@ export default function Navbar() {
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5">
           {/* Logo — Right side (RTL) */}
-          <a href="#home" className="group flex items-center gap-2.5">
+          <Link to="/" className="group flex items-center gap-2.5">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-warm-gold shadow-md shadow-gold/20 transition-transform group-hover:-rotate-3 group-hover:scale-105">
               <Heart className="h-5 w-5 text-deep-petrol" fill="currentColor" />
             </div>
             <span className="font-['Frank_Ruhl_Libre',serif] text-lg font-bold text-frost-white">
               בית <span className="text-gold">המטפלים</span>
             </span>
-          </a>
+          </Link>
 
           {/* Center links — Desktop */}
           <ul className="hidden items-center gap-8 md:flex">

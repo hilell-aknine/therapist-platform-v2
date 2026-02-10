@@ -187,7 +187,9 @@ export default function SocialInitiative() {
           className="mt-10 text-center"
         >
           <a
-            href="#register"
+            href="https://hilell-aknine.github.io/therapist-for-everyone/patient-onboarding.html"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-gold to-warm-gold px-7 py-3.5 text-base font-bold text-deep-petrol shadow-lg shadow-gold/20 transition-all hover:shadow-xl hover:shadow-gold/30 hover:brightness-110"
           >
             לבדיקת זכאות והתאמת מטפל

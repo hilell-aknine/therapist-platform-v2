@@ -3,7 +3,7 @@ import { ArrowLeft, Sparkles } from 'lucide-react'
 
 export default function Hero() {
   return (
-    <section className="relative flex min-h-[85vh] flex-col items-center justify-center px-4 py-20 text-center">
+    <section id="home" className="relative flex min-h-[85vh] flex-col items-center justify-center px-4 py-20 text-center">
       {/* Decorative top sparkle */}
       <motion.div
         initial={{ opacity: 0, scale: 0 }}

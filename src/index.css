@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --color-deep-petrol: #003B46;
+  --color-muted-teal: #00606B;
+  --color-dusty-aqua: #2F8592;
+  --color-frost-white: #E8F1F2;
+  --color-gold: #D4AF37;
+  --color-warm-gold: #C49A2A;
+  --color-light-gold: #F0D78C;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  direction: rtl;
+}

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowRight, ChevronDown, ChevronLeft, ChevronRight,
   Play, Check, BookOpen, FileText, Menu, X,
-  GraduationCap,
+  GraduationCap, Sparkles, NotebookPen,
 } from 'lucide-react'
 import { allCourses, getAllLessons, getAdjacentLessons, type Lesson, type Module } from '../../data/courses'
 
@@ -56,6 +56,79 @@ async function loadTranscript(lessonId: string): Promise<string | null> {
 }
 
 // ==========================================
+// Summary types & loader
+// ==========================================
+interface SummaryBlock {
+  type: 'topic' | 'highlight' | 'numbered' | 'principle' | 'homework'
+  title?: string | null
+  items: unknown[]
+  color?: string
+}
+
+interface SummarySection {
+  icon: string
+  title: string
+  blocks: SummaryBlock[]
+}
+
+interface HomeworkItem {
+  task: string
+  note: string
+}
+
+interface LessonSummary {
+  lessonNumber: number
+  title: string
+  subtitle: string
+  sections: SummarySection[]
+  homework: HomeworkItem[]
+  references: string
+}
+
+interface SummaryData {
+  practitioner: LessonSummary[]
+  master: LessonSummary[]
+}
+
+let cachedSummaries: SummaryData | null = null
+
+async function loadSummaries(): Promise<SummaryData | null> {
+  if (cachedSummaries) return cachedSummaries
+  try {
+    const res = await fetch('/data/lesson-summaries.json')
+    cachedSummaries = await res.json()
+    return cachedSummaries
+  } catch { return null }
+}
+
+// ==========================================
+// Booklet types & loader
+// ==========================================
+interface BookletChapter {
+  number: number
+  title: string
+  content: string
+}
+
+interface BookletData {
+  title: string
+  subtitle: string
+  instructor: string
+  chapters: BookletChapter[]
+}
+
+let cachedBooklet: BookletData | null = null
+
+async function loadBooklet(): Promise<BookletData | null> {
+  if (cachedBooklet) return cachedBooklet
+  try {
+    const res = await fetch('/data/nlp-booklet.json')
+    cachedBooklet = await res.json()
+    return cachedBooklet
+  } catch { return null }
+}
+
+// ==========================================
 // Main Component
 // ==========================================
 export default function CoursePortal() {
@@ -66,9 +139,12 @@ export default function CoursePortal() {
   const [completed, setCompleted] = useState<Set<string>>(getCompleted)
   const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set([1]))
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<'video' | 'transcript'>('video')
+  const [activeTab, setActiveTab] = useState<'video' | 'transcript' | 'summary' | 'booklet'>('video')
   const [transcript, setTranscript] = useState<string | null>(null)
   const [loadingTranscript, setLoadingTranscript] = useState(false)
+  const [summary, setSummary] = useState<LessonSummary | null>(null)
+  const [booklet, setBooklet] = useState<BookletData | null>(null)
+  const [selectedChapter, setSelectedChapter] = useState(0)
 
   // Initialize first lesson
   useEffect(() => {
@@ -86,6 +162,38 @@ export default function CoursePortal() {
       setLoadingTranscript(false)
     })
   }, [currentLessonId, course])
+
+  // Load summary data
+  useEffect(() => {
+    if (!currentLessonId || !course) return
+    loadSummaries().then(data => {
+      if (!data) return setSummary(null)
+      const isMaster = course.slug === 'nlp-master'
+      const list = isMaster ? data.master : data.practitioner
+      // Find which lesson number this is (by module position)
+      let lessonIdx = 0
+      for (const mod of course.modules) {
+        for (const l of mod.lessons) {
+          if (l.id === currentLessonId) {
+            // Summary is per-module (lesson 1 = module 1 summary, etc.)
+            const modIdx = course.modules.indexOf(mod)
+            const found = list.find(s => s.lessonNumber === modIdx + 1)
+            setSummary(found || null)
+            return
+          }
+          lessonIdx++
+        }
+      }
+      setSummary(null)
+    })
+  }, [currentLessonId, course])
+
+  // Load booklet data (lazy)
+  useEffect(() => {
+    if (activeTab === 'booklet' && !booklet) {
+      loadBooklet().then(setBooklet)
+    }
+  }, [activeTab, booklet])
 
   // Scroll to top on lesson change
   useEffect(() => {
@@ -294,6 +402,8 @@ export default function CoursePortal() {
           <div className="mb-4 flex gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1">
             <TabButton active={activeTab === 'video'} onClick={() => setActiveTab('video')} icon={<Play size={14} />} label="שיעור" />
             <TabButton active={activeTab === 'transcript'} onClick={() => setActiveTab('transcript')} icon={<FileText size={14} />} label="תמלול" />
+            <TabButton active={activeTab === 'summary'} onClick={() => setActiveTab('summary')} icon={<Sparkles size={14} />} label="סיכום" />
+            <TabButton active={activeTab === 'booklet'} onClick={() => setActiveTab('booklet')} icon={<NotebookPen size={14} />} label="חוברת" />
           </div>
 
           {/* Tab content */}
@@ -365,6 +475,42 @@ export default function CoursePortal() {
                   <p className="py-8 text-center text-sm text-frost-white/30">
                     אין תמלול זמין לשיעור זה
                   </p>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'summary' && (
+              <motion.div
+                key="summary"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6"
+              >
+                {summary ? (
+                  <SummaryView summary={summary} />
+                ) : (
+                  <p className="py-8 text-center text-sm text-frost-white/30">
+                    אין סיכום זמין למודול זה
+                  </p>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'booklet' && (
+              <motion.div
+                key="booklet"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="rounded-2xl border border-white/[0.06] bg-white/[0.03] p-6"
+              >
+                {booklet ? (
+                  <BookletView booklet={booklet} selectedChapter={selectedChapter} onSelectChapter={setSelectedChapter} />
+                ) : (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-gold/20 border-t-gold" />
+                  </div>
                 )}
               </motion.div>
             )}
@@ -513,5 +659,237 @@ function LessonItem({
       </div>
       <span className="shrink-0 text-[11px] text-frost-white/25">{lesson.duration}</span>
     </button>
+  )
+}
+
+// ==========================================
+// Summary View
+// ==========================================
+function renderMarkdownBold(text: string) {
+  const parts = text.split(/\*\*(.*?)\*\*/)
+  return parts.map((part, i) =>
+    i % 2 === 1
+      ? <strong key={i} className="text-frost-white">{part}</strong>
+      : <span key={i}>{part}</span>
+  )
+}
+
+function SummaryView({ summary }: { summary: LessonSummary }) {
+  return (
+    <div className="max-h-[65vh] overflow-y-auto space-y-6">
+      {/* Header */}
+      <div className="text-center pb-4 border-b border-white/[0.06]">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 text-xl mb-2">
+          {summary.sections[0]?.icon || '📝'}
+        </div>
+        <h3 className="text-xl font-bold text-gold">{summary.title}</h3>
+        <p className="text-xs text-frost-white/40 mt-1">{summary.subtitle}</p>
+      </div>
+
+      {/* Sections */}
+      {summary.sections.map((section, si) => (
+        <div key={si} className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{section.icon}</span>
+            <h4 className="text-base font-bold text-frost-white">{section.title}</h4>
+          </div>
+
+          {section.blocks.map((block, bi) => (
+            <div key={bi}>
+              {block.type === 'topic' && (
+                <div className="rounded-xl border-r-2 border-dusty-aqua/50 bg-white/[0.02] px-4 py-3">
+                  {block.title && (
+                    <p className="mb-2 text-sm font-semibold text-dusty-aqua">{block.title}</p>
+                  )}
+                  <ul className="space-y-1.5">
+                    {(block.items as string[]).map((item, ii) => (
+                      <li key={ii} className="flex gap-2 text-sm text-frost-white/65">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gold/40" />
+                        <span>{renderMarkdownBold(item)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {block.type === 'highlight' && (
+                <div className="rounded-xl border border-gold/20 bg-gold/[0.04] px-4 py-3">
+                  {block.title && (
+                    <p className="mb-2 text-sm font-bold text-gold">{block.title}</p>
+                  )}
+                  <ul className="space-y-1.5">
+                    {(block.items as string[]).map((item, ii) => (
+                      <li key={ii} className="text-sm text-frost-white/65">
+                        {renderMarkdownBold(item)}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {block.type === 'numbered' && (
+                <ol className="space-y-2 pr-1">
+                  {(block.items as string[]).map((item, ii) => (
+                    <li key={ii} className="flex gap-3 text-sm text-frost-white/65">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gold/15 text-[11px] font-bold text-gold">
+                        {ii + 1}
+                      </span>
+                      <span className="pt-0.5">{renderMarkdownBold(item)}</span>
+                    </li>
+                  ))}
+                </ol>
+              )}
+
+              {block.type === 'principle' && (
+                <div className="space-y-2">
+                  {(block.items as string[]).map((item, ii) => (
+                    <div key={ii} className="flex items-start gap-3 rounded-xl border border-gold/25 bg-gold/[0.05] px-4 py-3">
+                      <span className="text-gold mt-0.5">🔑</span>
+                      <p className="text-sm font-semibold text-frost-white/80">{item}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+
+      {/* Homework */}
+      {summary.homework.length > 0 && (
+        <div className="rounded-xl border-2 border-dashed border-dusty-aqua/30 bg-dusty-aqua/[0.04] p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">🎁</span>
+            <h4 className="text-base font-bold text-dusty-aqua">מתנות בית</h4>
+          </div>
+          <div className="space-y-3">
+            {summary.homework.map((hw, hi) => (
+              <div key={hi} className="flex gap-3">
+                <span className="mt-1 text-sm">🎁</span>
+                <div>
+                  <p className="text-sm font-semibold text-frost-white/80">{hw.task}</p>
+                  {hw.note && <p className="text-xs text-frost-white/40 mt-0.5">{hw.note}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* References */}
+      {summary.references && (
+        <div className="flex items-center gap-3 rounded-xl bg-deep-petrol px-4 py-3 text-sm text-frost-white/60">
+          <BookOpen size={16} className="shrink-0 text-gold" />
+          <span>{summary.references}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ==========================================
+// Booklet View
+// ==========================================
+function BookletView({
+  booklet,
+  selectedChapter,
+  onSelectChapter,
+}: {
+  booklet: BookletData
+  selectedChapter: number
+  onSelectChapter: (idx: number) => void
+}) {
+  const chapter = booklet.chapters[selectedChapter]
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <NotebookPen size={20} className="text-gold" />
+        <div>
+          <h3 className="text-lg font-bold text-frost-white">{booklet.title}</h3>
+          <p className="text-xs text-frost-white/40">{booklet.subtitle} · {booklet.instructor}</p>
+        </div>
+      </div>
+
+      {/* Chapter selector */}
+      <div className="mb-4 flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+        {booklet.chapters.map((ch, idx) => (
+          <button
+            key={idx}
+            onClick={() => onSelectChapter(idx)}
+            className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+              idx === selectedChapter
+                ? 'bg-gold/20 text-gold border border-gold/30'
+                : 'bg-white/[0.04] text-frost-white/40 hover:bg-white/[0.08] hover:text-frost-white/60'
+            }`}
+          >
+            {ch.number}. {ch.title}
+          </button>
+        ))}
+      </div>
+
+      {/* Chapter content */}
+      {chapter && (
+        <div className="max-h-[55vh] overflow-y-auto rounded-xl bg-white/[0.02] p-5">
+          <h2 className="mb-4 text-center font-['Frank_Ruhl_Libre',serif] text-2xl font-bold text-gold">
+            פרק {chapter.number}: {chapter.title}
+          </h2>
+          <div
+            className="booklet-content prose prose-invert max-w-none text-sm leading-relaxed text-frost-white/70
+              [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-gold [&_h2]:mt-6 [&_h2]:mb-3
+              [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-frost-white [&_h3]:mt-4 [&_h3]:mb-2
+              [&_p]:mb-3
+              [&_ul]:space-y-1 [&_ul]:pr-4 [&_ul]:mb-3
+              [&_ol]:space-y-1 [&_ol]:pr-4 [&_ol]:mb-3
+              [&_li]:text-frost-white/65
+              [&_strong]:text-frost-white
+              [&_em]:text-frost-white/50
+              [&_table]:w-full [&_table]:border-collapse [&_table]:mb-4
+              [&_th]:bg-deep-petrol [&_th]:text-gold [&_th]:px-3 [&_th]:py-2 [&_th]:text-right [&_th]:text-xs [&_th]:border [&_th]:border-white/10
+              [&_td]:px-3 [&_td]:py-2 [&_td]:text-xs [&_td]:border [&_td]:border-white/10
+              [&_.definition]:rounded-xl [&_.definition]:border [&_.definition]:border-dusty-aqua/30 [&_.definition]:bg-dusty-aqua/5 [&_.definition]:p-4 [&_.definition]:mb-4
+              [&_.definition-term]:text-base [&_.definition-term]:font-bold [&_.definition-term]:text-dusty-aqua [&_.definition-term]:mb-2
+              [&_.highlight]:rounded-xl [&_.highlight]:border [&_.highlight]:border-gold/20 [&_.highlight]:bg-gold/5 [&_.highlight]:p-4 [&_.highlight]:mb-4
+              [&_.highlight-title]:text-sm [&_.highlight-title]:font-bold [&_.highlight-title]:text-gold [&_.highlight-title]:mb-2
+              [&_.tip]:rounded-xl [&_.tip]:border [&_.tip]:border-emerald-500/20 [&_.tip]:bg-emerald-500/5 [&_.tip]:p-4 [&_.tip]:mb-4
+              [&_.tip-title]:text-sm [&_.tip-title]:font-bold [&_.tip-title]:text-emerald-400 [&_.tip-title]:mb-2
+              [&_.quote]:rounded-xl [&_.quote]:border-r-4 [&_.quote]:border-gold/40 [&_.quote]:bg-white/[0.03] [&_.quote]:px-5 [&_.quote]:py-4 [&_.quote]:mb-4 [&_.quote]:italic [&_.quote]:text-frost-white/50
+              [&_.exercise]:rounded-xl [&_.exercise]:border [&_.exercise]:border-amber-500/20 [&_.exercise]:bg-amber-500/5 [&_.exercise]:p-4 [&_.exercise]:mb-4
+              [&_.exercise-title]:text-sm [&_.exercise-title]:font-bold [&_.exercise-title]:text-amber-400 [&_.exercise-title]:mb-2
+              [&_.two-columns]:grid [&_.two-columns]:grid-cols-1 [&_.two-columns]:gap-4 [&_.two-columns]:mb-4 [&_.two-columns]:md:grid-cols-2
+              [&_.column]:rounded-xl [&_.column]:border [&_.column]:border-white/10 [&_.column]:bg-white/[0.02] [&_.column]:p-4
+              [&_.column-title]:text-sm [&_.column-title]:font-bold [&_.column-title]:text-gold [&_.column-title]:mb-2
+              [&_.write-area]:h-16 [&_.write-area]:rounded-lg [&_.write-area]:border [&_.write-area]:border-white/10 [&_.write-area]:bg-white/[0.02] [&_.write-area]:mb-3
+              [&_.infographic]:my-4 [&_.infographic]:flex [&_.infographic]:flex-col [&_.infographic]:items-center
+              [&_svg]:max-w-full [&_svg]:h-auto
+            "
+            dangerouslySetInnerHTML={{ __html: chapter.content }}
+          />
+        </div>
+      )}
+
+      {/* Chapter nav */}
+      <div className="mt-4 flex gap-3">
+        {selectedChapter > 0 && (
+          <button
+            onClick={() => onSelectChapter(selectedChapter - 1)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.04] py-2.5 text-sm text-frost-white/60 transition-all hover:border-gold/20 hover:text-frost-white"
+          >
+            <ChevronRight size={16} />
+            {booklet.chapters[selectedChapter - 1].title}
+          </button>
+        )}
+        {selectedChapter < booklet.chapters.length - 1 && (
+          <button
+            onClick={() => onSelectChapter(selectedChapter + 1)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gold/20 bg-gold/5 py-2.5 text-sm text-gold transition-all hover:bg-gold/10"
+          >
+            {booklet.chapters[selectedChapter + 1].title}
+            <ChevronLeft size={16} />
+          </button>
+        )}
+      </div>
+    </div>
   )
 }

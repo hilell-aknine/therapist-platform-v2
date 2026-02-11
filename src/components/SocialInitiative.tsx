@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import {
   HandHeart,
   ClipboardList,
@@ -186,15 +187,13 @@ export default function SocialInitiative() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="mt-10 text-center"
         >
-          <a
-            href="https://hilell-aknine.github.io/therapist-for-everyone/patient-onboarding.html"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            to="/patient-apply"
             className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-gold to-warm-gold px-7 py-3.5 text-base font-bold text-deep-petrol shadow-lg shadow-gold/20 transition-all hover:shadow-xl hover:shadow-gold/30 hover:brightness-110"
           >
             לבדיקת זכאות והתאמת מטפל
             <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-          </a>
+          </Link>
           <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-frost-white/40">
             <Lock size={12} />
             כל המידע נשמר בסודיות מוחלטת

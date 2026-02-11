@@ -1,5 +1,8 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { ArrowLeft, Sparkles } from 'lucide-react'
+
+const MotionLink = motion.create(Link)
 
 export default function Hero() {
   return (
@@ -44,22 +47,38 @@ export default function Hero() {
         עם הסמכה בינלאומית, ליווי אישי וכלים מעשיים
       </motion.p>
 
-      {/* CTA Button */}
-      <motion.a
-        href="#register"
+      {/* CTA Buttons */}
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.9 }}
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.97 }}
-        className="group flex items-center gap-3 rounded-2xl bg-gradient-to-l from-gold to-warm-gold px-8 py-4 text-lg font-bold text-deep-petrol shadow-xl shadow-gold/25 transition-shadow hover:shadow-2xl hover:shadow-gold/35"
+        className="flex flex-wrap items-center justify-center gap-4"
       >
-        להרשמה להכשרה
-        <ArrowLeft
-          size={20}
-          className="transition-transform group-hover:-translate-x-1"
-        />
-      </motion.a>
+        <MotionLink
+          to="/training#register"
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.97 }}
+          className="group flex items-center gap-3 rounded-2xl bg-gradient-to-l from-gold to-warm-gold px-8 py-4 text-lg font-bold text-deep-petrol shadow-xl shadow-gold/25 transition-shadow hover:shadow-2xl hover:shadow-gold/35"
+        >
+          להרשמה להכשרה
+          <ArrowLeft
+            size={20}
+            className="transition-transform group-hover:-translate-x-1"
+          />
+        </MotionLink>
+        <MotionLink
+          to="/therapist-apply"
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.97 }}
+          className="group flex items-center gap-3 rounded-2xl border-2 border-frost-white/20 bg-frost-white/5 px-8 py-4 text-lg font-bold text-frost-white shadow-lg backdrop-blur-sm transition-all hover:border-frost-white/30 hover:bg-frost-white/10"
+        >
+          הצטרפות כמטפל
+          <ArrowLeft
+            size={20}
+            className="transition-transform group-hover:-translate-x-1"
+          />
+        </MotionLink>
+      </motion.div>
 
       {/* Bottom decorative line */}
       <motion.div

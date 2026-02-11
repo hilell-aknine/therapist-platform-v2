@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { Award, HandHeart, Briefcase, ArrowLeft } from 'lucide-react'
 
 const highlights = [
@@ -87,13 +88,13 @@ export default function TrainingHighlights() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="mt-10 text-center"
         >
-          <a
-            href="#training"
+          <Link
+            to="/training"
             className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-l from-gold to-warm-gold px-7 py-3.5 text-base font-bold text-deep-petrol shadow-lg shadow-gold/20 transition-all hover:shadow-xl hover:shadow-gold/30 hover:brightness-110"
           >
             לכל הפרטים על ההכשרה
             <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
       </div>
     </section>

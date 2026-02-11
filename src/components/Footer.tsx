@@ -1,10 +1,11 @@
+import { Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 
 const footerLinks = [
-  { label: 'הכשרת מטפלים', href: '#training' },
-  { label: 'הכשרות', href: '#courses' },
-  { label: 'מי אנחנו', href: '#about' },
-  { label: 'המיזם החברתי', href: '#social-initiative' },
+  { label: 'הכשרת מטפלים', to: '/training' },
+  { label: 'הכשרות', to: '/courses' },
+  { label: 'מי אנחנו', to: '/about' },
+  { label: 'המיזם החברתי', to: '/social-initiative' },
 ]
 
 const socialLinks = [
@@ -27,14 +28,14 @@ export default function Footer() {
         <div className="flex flex-col items-center gap-8 md:flex-row md:items-start md:justify-between">
           {/* Brand */}
           <div className="text-center md:text-right">
-            <a href="#home" className="mb-3 inline-flex items-center gap-2.5">
+            <Link to="/" className="mb-3 inline-flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-warm-gold">
                 <Heart className="h-4 w-4 text-deep-petrol" fill="currentColor" />
               </div>
               <span className="font-['Frank_Ruhl_Libre',serif] text-base font-bold text-frost-white">
                 בית <span className="text-gold">המטפלים</span>
               </span>
-            </a>
+            </Link>
             <p className="mt-2 max-w-xs text-sm leading-relaxed text-frost-white/40">
               הפלטפורמה המקצועית הראשונה בישראל שנבנתה במיוחד עבור מטפלים
             </p>
@@ -46,13 +47,13 @@ export default function Footer() {
               לימודים
             </h4>
             {footerLinks.map((link) => (
-              <a
-                key={link.href + link.label}
-                href={link.href}
+              <Link
+                key={link.to + link.label}
+                to={link.to}
                 className="py-1 text-sm text-frost-white/50 transition-colors hover:text-frost-white"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </div>
 

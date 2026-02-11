@@ -186,7 +186,7 @@ export default function CoursesGrid() {
                 </Link>
               ) : (
                 <Link
-                  to={isLocked && course.slug === 'nlp-master' ? `/course/${course.slug}` : '#training'}
+                  to={isLocked && course.slug === 'nlp-master' ? `/course/${course.slug}` : '/training'}
                   className={`flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all active:scale-[0.98] ${config.btnClass}`}
                 >
                   {config.btnText}
